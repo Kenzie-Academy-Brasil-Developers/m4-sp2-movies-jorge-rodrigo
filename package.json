@@ -1,0 +1,29 @@
+{
+  "name": "m4-sp2-movies-jorge-rodrigo",
+  "version": "1.0.0",
+  "description": "| Método | Endpoint | Responsabilidade |\r |--------|----------|------------------|\r | POST | /movies | Criar um novo filme |\r | GET | /movies | Listar todos os filmes |\r | PATCH | /movies/&lt;id&gt; | Atualiza os dados de um filme de forma dinâmica |\r | DELETE | /movies/&lt;id&gt; | Deleta um filme |",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsnd --cls --rs src/app.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kenzie-Academy-Brasil-Developers/m4-sp2-movies-jorge-rodrigo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kenzie-Academy-Brasil-Developers/m4-sp2-movies-jorge-rodrigo/issues"
+  },
+  "homepage": "https://github.com/Kenzie-Academy-Brasil-Developers/m4-sp2-movies-jorge-rodrigo#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.16",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.9.5"
+  }
+}
