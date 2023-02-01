@@ -12,6 +12,13 @@ interface iMoviesId extends iMovies {
   count?:string
 }
 
+interface iPagination {
+ prevPage : string | null,
+ nextPage: string | null,
+ count: string | number,
+ data: iMoviesId[]
+}
+
 type tMoviesResults = QueryResult<iMoviesId>
 
-export {iMovies,iMoviesId,tMoviesResults}
+export {iMovies,iMoviesId,tMoviesResults,iPagination}
