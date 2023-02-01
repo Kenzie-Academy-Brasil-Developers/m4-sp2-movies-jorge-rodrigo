@@ -19,10 +19,14 @@
   },
   "homepage": "https://github.com/Kenzie-Academy-Brasil-Developers/m4-sp2-movies-jorge-rodrigo#readme",
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "pg": "^8.9.0",
+    "pg-format": "^1.0.4"
   },
   "devDependencies": {
     "@types/express": "^4.17.16",
+    "@types/pg": "^8.6.6",
+    "@types/pg-format": "^1.0.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^4.9.5"
   }
