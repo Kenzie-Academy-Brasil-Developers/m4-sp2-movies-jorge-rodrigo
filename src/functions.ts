@@ -2,11 +2,10 @@ import { Response, Request } from "express";
 import { QueryConfig } from "pg";
 import format from "pg-format";
 import { client } from "./database";
-import { iMovies, iMoviesId, iPagination, tMoviesResults } from "./interfaces";
+import {  iMoviesId, iPagination, tMoviesResults } from "./interfaces";
 
 const createMovie = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const movieData: iMovies = await movieValidation(req.body);
     const movieString: string = format(
       `
        INSERT INTO
@@ -15,8 +14,8 @@ const createMovie = async (req: Request, res: Response): Promise<Response> => {
           (%L)
           RETURNING *
       `,
-      Object.keys(movieData),
-      Object.values(movieData)
+      Object.keys(req.body),
+      Object.values(req.body)
     );
 
     const movieResult: tMoviesResults = await client.query(movieString);
@@ -31,10 +30,7 @@ const createMovie = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
-const showMovieList = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+const showMovieList = async ( req: Request,res: Response): Promise<Response> => {
   let page = req.query.page || 1;
   let perPage = req.query.perPage || 5;
   let sort = req.query.sort;
@@ -49,6 +45,7 @@ const showMovieList = async (
   if (sort === undefined) {
     const query: string = `
     SELECT * FROM movies
+    ORDER BY id
     OFFSET $1 LIMIT $2 
     `;
 
@@ -60,14 +57,8 @@ const showMovieList = async (
     const queryResult: tMoviesResults = await client.query(queryConfig);
 
     const baseUrl: string = "http://localhost:3000/movies";
-    const prevPage: string | null =
-      page > 1
-        ? `${baseUrl}?page=${Number(page) - 1}&perPage=${perPage}`
-        : null;
-    const nextPage: string | null =
-      queryResult.rowCount > 0
-        ? `${baseUrl}?page=${Number(page) + 1}&perPage=${perPage}`
-        : null;
+    const prevPage: string | null = page > 1 ? `${baseUrl}?page=${Number(page) - 1}&perPage=${perPage}` : null;
+    const nextPage: string | null = queryResult.rowCount > 0 ? `${baseUrl}?page=${Number(page) + 1}&perPage=${perPage}` : null;
 
     const pagination: iPagination = {
       prevPage: prevPage,
@@ -88,20 +79,24 @@ const showMovieList = async (
       res.status(404).json({message: `${sort} not found`})
     }
   }
-  
+  if(order !== "desc"){
+    if(order === "asc"){
+       order = "ASC"
+    }
+    if(order !== "DESC"){
+      order = undefined
+    }
+  }
+  if(order === "desc"){
+    order = "DESC"
+  }
   const query: string = `
   SELECT * FROM "movies" ORDER BY "${sort}" ${order !== undefined ? `${order}` : ``} OFFSET ${Number(perPage) * (Number(page) - 1)} LIMIT ${perPage}
     `;
   const queryResult: tMoviesResults = await client.query(query);
   const baseUrl: string = "http://localhost:3000/movies";
-  const prevPage: string | null =
-    page > 1
-      ? `${baseUrl}?page=${Number(page) - 1}&perPage=${perPage}`
-      : null;
-  const nextPage: string | null =
-    queryResult.rowCount > 0
-      ? `${baseUrl}?page=${Number(page) + 1}&perPage=${perPage}`
-      : null;
+  const prevPage: string | null = page > 1 ? `${baseUrl}?page=${Number(page) - 1}&perPage=${perPage}` : null;
+  const nextPage: string | null = queryResult.rowCount > 0 ? `${baseUrl}?page=${Number(page) + 1}&perPage=${perPage}` : null;
 
   const pagination: iPagination = {
     prevPage: prevPage,
@@ -113,19 +108,40 @@ const showMovieList = async (
   return res.status(200).json(pagination);
 };
 
-const movieValidation = async (payload: any): Promise<iMovies> => {
-  const query: string = `
-  SELECT COUNT(*)
-   FROM movies
-   WHERE "movieName" LIKE '${payload.movieName}';
-  `;
-  const queryResult: tMoviesResults = await client.query(query);
+const updateMovie = async (req: Request, res: Response): Promise<Response> => {
+  const id = req.params.id
+  const movieKeys : string[] = Object.keys(req.body)
+  const movieValues: string[] = Object.values(req.body)
 
-  if (Number(queryResult.rows[0].count) > 0) {
-    throw new Error(`Movie already exists.`);
+  const movieUpdateTemplate: string = `
+  UPDATE movies
+  SET(%I) = ROW(%L)
+  WHERE id = $1
+  RETURNING *;
+  ` 
+
+  const queryFormat:string = format(movieUpdateTemplate,movieKeys,movieValues)
+  const config: QueryConfig = { text: queryFormat, values: [id] } 
+
+  const updatedMovie : tMoviesResults = await client.query(config)
+  return res.status(200).json(updatedMovie.rows[0])
+}
+
+const deleteMovie = async (req: Request, res: Response): Promise<Response> => {4
+  const id = req.params.id
+
+  const movieDeleteTemplate: string = `
+  DELETE FROM movies WHERE id = $1;
+  ` 
+  const config: QueryConfig = { text: movieDeleteTemplate, values: [id] } 
+
+  const deletedMovie : tMoviesResults = await client.query(config)
+
+  if(deletedMovie.rowCount < 1){
+    return res.status(400).json({message: "Movie Not found"})
   }
 
-  return payload;
-};
+  return res.status(204).json()
+}
 
-export { showMovieList, createMovie };
+export { showMovieList, createMovie ,updateMovie,deleteMovie};
