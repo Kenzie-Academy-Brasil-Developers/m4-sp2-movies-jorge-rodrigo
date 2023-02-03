@@ -31,10 +31,11 @@ const createMovie = async (req: Request, res: Response): Promise<Response> => {
 };
 
 const showMovieList = async ( req: Request,res: Response): Promise<Response> => {
-  let page = req.query.page || 1;
-  let perPage = req.query.perPage || 5;
+  let page = Number(req.query.page) || 1;
+  let perPage = Number(req.query.perPage) || 5;
   let sort = req.query.sort;
   let order = req.query.order;
+
 
   if (page <= 0) {
     page = 1;
